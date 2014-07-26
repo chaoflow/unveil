@@ -10,6 +10,7 @@ __version__ = '0.20140726'
 import click
 import logging
 import os
+import json
 
 from .distinfo import Distribution
 
@@ -62,3 +63,52 @@ def create_scripts(ctx, dists, force, python, target):
             with open(abspath, 'wb') as f:
                 f.write(content % dict(python=python))
             os.chmod(abspath, os.stat(abspath).st_mode | UMASKED_EXE)
+
+
+@cli.command(name="create-meta")
+@click.option(
+    '--dist', 'dists',
+    callback=lambda ctx, dists: tuple(Distribution(distinfopath=x) for x in dists),
+    multiple=True,
+    type=click.Path(exists=True),
+    help="Paths to .dist-info directories",
+)
+@click.pass_context
+def create_meta(ctx, dists):
+    log = ctx.log = ctx.parent.log.getChild('create-meta')
+
+    dists_meta = [json.load(open(dist.metafile)) for dist in dists]
+    dists_names = [meta['name'] for meta in dists_meta]
+
+    print('python: self:')
+    print('{')
+    print('')
+    for meta in dists_meta:
+        requires = []
+        if 'run_requires' in meta:
+            for item in meta['run_requires']:
+                if 'requires' in item:
+                    for req_item in item['requires']:
+                        dist_name = req_item.split(' ')[0]
+                        if dist_name in dists_names:
+                            requires.append(dist_name)
+        if 'summary' in meta:
+            print('  "{}".meta.description = "{}";'.format(
+                meta['name'], meta['summary']))
+        if 'extensions' in meta and \
+           'python.details' in meta['extensions'] and \
+           'project_urls' in meta['extensions']['python.details'] and \
+           'Home' in meta['extensions']['python.details']['project_urls']:
+            print('  "{}".meta.homepage = "{}";'.format(
+                meta['name'],
+                meta['extensions']['python.details']['project_urls']['Home'],
+                ))
+        if 'license' in meta:
+            print('  "{}".meta.license = "{}";'.format(
+                meta['name'], meta['license']))
+        print('  "{}".requires = [{}];'.format(
+            meta['name'],
+            ' '.join(['self.' + i for i in requires]),
+            ))
+        print('')
+    print('}')

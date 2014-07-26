@@ -27,6 +27,10 @@ class Distribution(object):
         return os.path.join(self.distinfopath, 'entry_points.txt')
 
     @property
+    def metafile(self):
+        return os.path.join(self.distinfopath, 'metadata.json')
+
+    @property
     def datadir(self):
         return self.distinfopath.replace('.dist-info', '.data')
 
@@ -54,7 +58,9 @@ class Distribution(object):
         try:
             cfgparser.read(self.epfile)
             items = cfgparser.items('console_scripts')
-        except ConfigParser.NoSectionError, OSError:
+        except ConfigParser.NoSectionError:
+            raise StopIteration
+        except OSError:
             raise StopIteration
 
         for name, callpath in items:
