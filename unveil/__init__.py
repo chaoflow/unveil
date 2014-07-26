@@ -4,7 +4,7 @@ from __future__ import print_function
 """
 
 __author__ = 'Florian Friesdorf <flo@chaoflow.net>'
-__version__ = '0'
+__version__ = '0.20140726'
 
 
 import click
