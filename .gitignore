@@ -1,4 +1,7 @@
 *.py[co]
+/bin
+/include
+/lib
 /nixpkgs
 /result
 /result-*
