@@ -112,6 +112,8 @@ def meta(paths, print_names, print_nix_wheels_meta, sort):
 
 
 def print_nix_meta(dists):
+    """XXX: This is nixpkgs-specific and might be moved out
+    """
     dists_meta = [dist.metadata for dist in dists]
     dists_names = [meta['name'] for meta in dists_meta]
 
