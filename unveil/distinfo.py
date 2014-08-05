@@ -1,5 +1,6 @@
 import ConfigParser
 import itertools
+import json
 import os
 
 
@@ -27,8 +28,9 @@ class Distribution(object):
         return os.path.join(self.distinfopath, 'entry_points.txt')
 
     @property
-    def metafile(self):
-        return os.path.join(self.distinfopath, 'metadata.json')
+    def metadata(self):
+        return json.load(
+            open(os.path.join(self.distinfopath, 'metadata.json'), 'rb'))
 
     @property
     def datadir(self):
