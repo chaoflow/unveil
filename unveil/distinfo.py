@@ -58,9 +58,7 @@ class Distribution(object):
         try:
             cfgparser.read(self.epfile)
             items = cfgparser.items('console_scripts')
-        except ConfigParser.NoSectionError:
-            raise StopIteration
-        except OSError:
+        except (ConfigParser.NoSectionError, OSError):
             raise StopIteration
 
         for name, callpath in items:
