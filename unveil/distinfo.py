@@ -1,4 +1,5 @@
 import ConfigParser
+import functools
 import itertools
 import json
 import os
@@ -19,28 +20,47 @@ if __name__ == '__main__':
 """.lstrip()
 
 
+def cached_property(function):
+    cache_name = '__' + function.__name__
+
+    @functools.wraps(function)
+    def caching(self):
+        try:
+            return getattr(self, cache_name)
+        except AttributeError:
+            rv = function(self)
+            setattr(self, cache_name, rv)
+            return rv
+
+    return property(caching)
+
+
 class Distribution(object):
     def __init__(self, distinfopath):
         self.distinfopath = os.path.abspath(distinfopath)
 
-    @property
+    @cached_property
+    def datadir(self):
+        return self.distinfopath.replace('.dist-info', '.data')
+
+    @cached_property
     def epfile(self):
         return os.path.join(self.distinfopath, 'entry_points.txt')
 
-    @property
+    @cached_property
     def metadata(self):
         return json.load(
             open(os.path.join(self.distinfopath, 'metadata.json'), 'rb'))
 
-    @property
-    def datadir(self):
-        return self.distinfopath.replace('.dist-info', '.data')
+    @cached_property
+    def name(self):
+        return self.metadata['name']
 
-    @property
+    @cached_property
     def scriptsdir(self):
         return os.path.join(self.datadir, 'scripts')
 
-    @property
+    @cached_property
     def scripts(self):
         return itertools.chain(self._scripts(), self._ep_scripts())
 
