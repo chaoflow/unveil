@@ -16,11 +16,6 @@ from glob import glob
 from .distinfo import Distribution
 
 
-UMASK=os.umask(0)
-os.umask(UMASK)
-UMASKED_EXE=(0o111 - (0o111 & UMASK))
-
-
 @click.group()
 @click.option('--debug/--no-debug', help='Enable debug output')
 @click.pass_context
@@ -63,7 +58,6 @@ def create_scripts(ctx, dists, force, python, target):
             assert not os.path.exists(abspath) or force
             with open(abspath, 'wb') as f:
                 f.write(content % dict(python=python))
-            os.chmod(abspath, os.stat(abspath).st_mode | UMASKED_EXE)
 
 
 def find_dists(path):
